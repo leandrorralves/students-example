@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:f="http://java.sun.com/jsf/core" class="no-js" lang="en">
+
+<f:view contentType="text/html; charset=UTF-8">
+
+	<h:head>
+		<title>Listagem de Alunos</title>
+	</h:head>
+
+	<h:body>
+		<h:form id="form">
+			<p:growl id="msgs" showDetail="true" />
+
+			<p:dataTable id="tblStudents" var="student"
+				value="#{studentMB.students}" editable="true" scrollable="true"
+				rowKey="#{student.email}" selection="#{studentMB.student}"
+				selectionMode="single" scrollWidth="100%" scrollHeight="150"
+				paginator="true" rows="10"
+				paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+				currentPageReportTemplate="{startRecord}-{endRecord} de {totalRecords} registros">
+				<f:facet name="header">Alunos cadastrados</f:facet>
+
+				<p:ajax event="rowEdit" listener="#{studentMB.onRowEdit}"
+					update=":form:msgs" />
+				<p:ajax event="rowEditCancel" listener="#{studentMB.onRowCancel}"
+					update=":form:msgs" />
+
+				<p:column width="32">
+					<p:rowEditor />
+				</p:column>
+
+				<p:column headerText="Nome" width="150" filterBy="#{student.name}"
+					filterMatchMode="contains">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{student.name}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText value="#{student.name}" style="width:100%"
+								maxlength="100" />
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+
+				<p:column headerText="E-mail" width="200">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{student.email}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText value="#{student.email}" style="width:100%"
+								maxlength="40" />
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+
+				<p:column headerText="Turma" width="200">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{student.team.name}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:selectOneMenu value="#{student.team.name}" style="width:100%">
+								<f:selectItem itemLabel="1A" itemValue="1A" />
+								<f:selectItem itemLabel="2A" itemValue="2A" />
+								<f:selectItem itemLabel="3A" itemValue="3A" />
+							</p:selectOneMenu>
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+				<p:column headerText="Data de nascimento" width="150">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{student.birthDate}">
+								<f:convertDateTime pattern="dd/mm/yyyy" />
+							</h:outputText>
+						</f:facet>
+						<f:facet name="input">
+							<p:inputMask mask="99/99/9999" value="#{student.birthDate}"
+								maxlength="10" style="width:100%" />
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+
+				<p:column headerText="Renda" width="100">
+					<p:cellEditor>
+						<f:facet name="output">
+							<h:outputText value="#{student.income}" />
+						</f:facet>
+						<f:facet name="input">
+							<p:inputText value="#{student.income}" maxlength="10"
+								style="width:100%" />
+						</f:facet>
+					</p:cellEditor>
+				</p:column>
+
+			</p:dataTable>
+
+			<p:contextMenu for="tblStudents">
+				<p:menuitem value="View" update="studentDetail" icon="pi pi-search"
+					oncomplete="PF('studentDialog').show()" />
+				<p:menuitem value="Delete" update="tblStudents" icon="pi pi-times"
+					action="#{studentMB.deleteStudent()}" />
+			</p:contextMenu>
+
+			<p:dialog header="Detalhes do aluno" widgetVar="studentDialog"
+				modal="true" showEffect="fade" hideEffect="fade" resizable="false">
+				<p:outputPanel id="studentDetail" style="text-align:center;">
+					<p:panelGrid columns="2" rendered="#{not empty studentMB.student}"
+						columnClasses="label,value">
+						<f:facet name="header">
+							Foto	
+						</f:facet>
+
+						<h:outputText value="Nome:" />
+						<h:outputText value="#{studentMB.student.name}" />
+
+						<h:outputText value="E-mail" />
+						<h:outputText value="#{studentMB.student.email}" />
+
+						<h:outputText value="Turma:" />
+						<h:outputText value="#{studentMB.student.team}" />
+
+						<h:outputText value="Renda" />
+						<h:outputText value="R$ #{studentMB.student.income}" />
+					</p:panelGrid>
+				</p:outputPanel>
+			</p:dialog>
+
+			<p:toolbar>
+				<f:facet name="left">
+					<p:commandButton type="button" value="Novo aluno"
+						onclick="PF('newStudent').show();" />
+					<p:commandButton id="toggler" type="button"
+						value="Selecionar colunas" style="float:right"
+						icon="ui-icon-calculator" />
+					<p:columnToggler datasource="tblStudents" trigger="toggler" />
+				</f:facet>
+			</p:toolbar>
+
+			<p:dialog header="Novo aluno" widgetVar="newStudent" modal="true"
+				height="290" width="740" resizable="false">
+				<p:panelGrid columns="4">
+					<p:outputLabel for="name" value="Nome" />
+					<p:inputText id="name" value="#{studentMB.student.name}"
+						required="true" maxlength="100" size="15" />
+
+					<p:outputLabel for="email" value="E-mail" />
+					<p:inputText id="email" value="#{studentMB.student.email}"
+						required="true" maxlength="40" size="20" />
+
+					<p:outputLabel for="birthDate" value="Data de Nascimento" />
+					<p:inputMask id="birthDate" mask="99/99/9999" required="true"
+						value="#{studentMB.student.birthDate}" maxlength="10" size="10">
+						<f:convertDateTime pattern="dd/mm/yyyy" />
+					</p:inputMask>
+
+					<p:outputLabel for="income" value="Renda (R$)" />
+					<p:inputText id="income" value="#{studentMB.student.income}"
+						required="true" maxlength="8" size="10">
+						<f:convertNumber pattern="#,##0.00" minFractionDigits="2" />
+					</p:inputText>
+
+					<p:outputLabel for="team" value="Turma" />
+						<p:inputText id="team" value="" required="true" maxlength="10"
+							size="10" />
+
+						<p:outputLabel value="" />
+						<p:commandButton action="#{studentMB.addStudent()}"
+							value="Adicionar" onsuccess="PF('newStudent').hide();"
+							update="form" ajax="false" />
+				</p:panelGrid>
+			</p:dialog>
+		</h:form>
+	</h:body>
+</f:view>
+</html>
